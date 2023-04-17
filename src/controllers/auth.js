@@ -71,7 +71,6 @@ class Auth {
     try {
       const { username, password } = req.body;
       const filter = {};
-      console.log(username);
       if (rules.email.test(username)) {
         filter.email = username;
       } else if (rules.phone.test(username)) {
@@ -80,9 +79,9 @@ class Auth {
         return res.status(400).json(formatResponseError({ code: 'invalid_username' }));
       }
 
-      const user = await User.findOne({ filter }).exec();
+      const user = await User.findOne(filter).exec();
       if (!user || !user.isAuthenticate(password)) {
-        return res.status(400).json(responseError({ code: 'incorrect_credentials' }));
+        return res.status(400).json(formatResponseError({ code: 'incorrect_credentials' }));
       }
 
       const accessToken = sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1y' });

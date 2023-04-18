@@ -2,6 +2,7 @@ import User from '../models/user';
 import { sign } from 'jsonwebtoken';
 import { formatResponseSuccess, formatResponseError } from '../config';
 import { rules } from '../constants/rules';
+import ROLES_ENUM from '../constants/roles';
 
 class Auth {
   async validRegister(req, res, next) {
@@ -59,7 +60,7 @@ class Auth {
         return res.status(400).json(formatResponseError({ code: 'missing_username' }));
       }
       if (!req.body.password) {
-        return res.status(400).json(formatResponseError({ code: 'missing_username' }));
+        return res.status(400).json(formatResponseError({ code: 'missing_password' }));
       }
       next();
     } catch (error) {
@@ -97,6 +98,25 @@ class Auth {
       return res.status(200).json(formatResponseSuccess(data));
     } catch (error) {
       return res.status(400).json(formatResponseError(error));
+    }
+  }
+  // [GET] /api/auth/profile
+  async profile(req, res) {
+    try {
+      const data = await User.findById(req.user.id).exec();
+      const { _id, fullname, email, phone, avatar, role } = data;
+      const user = {
+        _id,
+        fullname,
+        email,
+        phone,
+        avatar,
+        ...(role === ROLES_ENUM.ADMIN && { role })
+      };
+      return res.status(200).json(formatResponseSuccess(user));
+    } catch (error) {
+      console.error('[error]', error);
+      return res.status(401).json(formatResponseError({ code: 'invalid_token' }));
     }
   }
 }

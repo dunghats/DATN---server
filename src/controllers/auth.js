@@ -4,6 +4,10 @@ import { formatResponseSuccess, formatResponseError } from '../config';
 import { rules } from '../constants/rules';
 import ROLES_ENUM from '../constants/roles';
 
+const jwt = require('jsonwebtoken');
+const config = require('../config/auth.config');
+const otpGenerator = require('otp-generator');
+
 class Auth {
   async validRegister(req, res, next) {
     try {
@@ -22,6 +26,7 @@ class Auth {
       return res.status(400).json(formatResponseError(error));
     }
   }
+
   // [POST] api/auth/register
   async register(req, res) {
     try {
@@ -38,14 +43,23 @@ class Auth {
       if (exist_phone) {
         return res.status(400).json(formatResponseError({ code: 'existing_phone' })); // đã tồn tại
       }
-
-      const user = await new User({ ...req.body }).save();
+      const dataUserRequest = {
+        email: req.body.email,
+        phone: req.body.phone,
+        fullname: req.body.fullname,
+        password: req.body.password,
+        role: req.body.role,
+        otpResetPass: otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false }),
+        tokenDevice: req.body.tokenDevice
+      };
+      const user = await new User(dataUserRequest).save();
 
       const data = {
         _id: user._id,
         fullname: user.fullname,
         email: user.email,
-        phone: user.phone
+        phone: user.phone,
+        tokenDevice: user.tokenDevice
       };
 
       return res.status(200).json(formatResponseSuccess(data));
@@ -54,6 +68,7 @@ class Auth {
       return res.status(400).json(formatResponseError(error));
     }
   }
+
   async validLogin(req, res, next) {
     try {
       if (!req.body.username) {
@@ -67,6 +82,7 @@ class Auth {
       return res.status(400).json(formatResponseError(error));
     }
   }
+
   // [POST] api/auth/login
   async login(req, res) {
     try {
@@ -85,13 +101,16 @@ class Auth {
         return res.status(400).json(formatResponseError({ code: 'incorrect_credentials' }));
       }
 
-      const accessToken = sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1y' });
+      const accessToken = jwt.sign({ id: user.id }, config.secret, {
+        // expiresIn: 86400 // 24 hours
+      });
 
       const data = {
         _id: user._id,
         fullname: user.fullname,
         email: user.email,
         phone: user.phone,
+        tokenDevice: user.tokenDevice,
         accessToken
       };
 
@@ -100,6 +119,7 @@ class Auth {
       return res.status(400).json(formatResponseError(error));
     }
   }
+
   // [GET] /api/auth/profile
   async profile(req, res) {
     try {

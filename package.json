@@ -21,6 +21,9 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.3",
-    "socket.io": "^4.6.1"
+    "socket.io": "^4.6.1",
+    "otp-generator": "^4.0.0",
+    "nodemailer": "^6.7.2",
+    "fcm-node": "^1.6.1"
   }
 }

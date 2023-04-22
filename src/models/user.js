@@ -50,24 +50,24 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.methods = {
-  isAuthenticate(password) {
-    return this.password === this.encryptPassword(password);
-  },
-  encryptPassword(password) {
-    if (!password) return;
-    try {
-      return crypto.createHmac('sha256', this.salt).update(password.toString()).digest('hex');
-    } catch (error) {
-      return error;
-    }
-  }
-};
-
-userSchema.pre('save', function(next) {
-  this.salt = crypto.randomUUID();
-  this.password = this.encryptPassword(this.password);
-  next();
-});
+// userSchema.methods = {
+//   isAuthenticate(password) {
+//     return this.password === this.encryptPassword(password);
+//   },
+//   encryptPassword(password) {
+//     if (!password) return;
+//     try {
+//       return crypto.createHmac('sha256', this.salt).update(password.toString()).digest('hex');
+//     } catch (error) {
+//       return error;
+//     }
+//   }
+// };
+//
+// userSchema.pre('save', function(next) {
+//   this.salt = crypto.randomUUID();
+//   this.password = this.encryptPassword(this.password);
+//   next();
+// });
 
 export default mongoose.model('User', userSchema);

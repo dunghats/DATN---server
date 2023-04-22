@@ -4,11 +4,11 @@ import { setAuth } from '../middlewares/auth';
 
 const router = Router();
 const userController = require('../controllers/user');
-router.post('/auth/register', User.validRegister, User.register);
+router.post('/auth/register',/* User.validRegister,*/ User.register);
 
 router.get('/auth/profile', setAuth, User.profile);
 
-router.post('/auth/login', User.validLogin, User.login);
+router.post('/auth/login', /*User.validLogin,*/ User.login);
 router.get('/auth/getUserByToken' ,[userController.verifyToken, userController.isModerator], userController.moderatorBoard)
 
 router.post('/auth/checkEmailForgot' , userController.sendMailForgotPass)

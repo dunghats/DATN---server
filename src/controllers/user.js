@@ -1,9 +1,9 @@
 import User from '../models/user';
-import { formatResponseSuccess } from '../config';
-
+import { formatResponseError, formatResponseSuccess } from '../config';
+const bcyrpt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const config = require('../config/auth.config');
-
+const { sendMailForgotPassword } = require('../services/MAIL');
 function moderatorBoard(req, res) {
   res.status(200).send('User Content.');
 }
@@ -40,9 +40,11 @@ async function sendMailForgotPass(req, res) {
   try {
     const checkEmail = await User.findOne({ email: req.body.email });
     if (!checkEmail) {
-      return res.status(200).json({ status: false, message: 'Email không tồn tại' });
+      return res.status(200).json({ status: false, message: 'Email chưa được đăng kí' });
     }
-    await sendMailForgotPass({
+    console.log(checkEmail.otpResetPass);
+    console.log(req.body.email);
+    await sendMailForgotPassword({
       to: req.body.email,
       OTP: checkEmail.otpResetPass
     });
@@ -52,10 +54,8 @@ async function sendMailForgotPass(req, res) {
       message: 'Đã gửi tới'
     });
   } catch (error) {
-    res.status(400).json({
-      status: false,
-      message: 'Mail chưa được đăng kí'
-    });
+    console.log(error);
+    res.status(200).json(formatResponseError({ code: '404' }, false, 'Mail chưa được đăng kí'));
   }
 }
 
@@ -72,30 +72,27 @@ async function validateUserPass(req, res) {
     }
     return res.status(200).json({ status: true, message: 'OTP chính xác' });
   } catch (error) {
-    res.status(400).json({
-      status: false,
-      message: 'Mail chưa được đăng kí'
-    });
+    res.status(200).json(formatResponseError({ code: '404' }, false, 'Mail chưa được đăng kí'));
   }
 }
 
 async function newPass(req, res) {
   try {
     const userData = await User.findOne({
-      email: req.body.email
+      email: req.body.username
     });
     if (!userData) {
       return res.status(200).json({ status: false, message: 'Email không tồn tại' });
     }
+
+    const passHass = bcyrpt.hashSync(req.body.password, 10)
+
     const updatedUser = await User.findByIdAndUpdate(userData._id, {
-      $set: { password: req.body.password }
+      $set: { password: passHass  }
     });
     return res.status(200).json({ status: true, message: 'Mật khẩu đã được thay đổi' });
   } catch (error) {
-    res.status(400).json({
-      status: false,
-      message: 'Mail chưa được đăng kí'
-    });
+    res.status(200).json(formatResponseError({ code: '404' }, false, 'Mail chưa được đăng kí'));
   }
 }
 
@@ -111,10 +108,7 @@ async function updateCheckTokenDevice   (req , res){
       message: 'Update thành công'
     })
   } catch (error) {
-    res.status(400).json({
-      status: false,
-      message: 'Không tìm thấy data',
-    })
+    res.status(200).json(formatResponseError({ code: '404' }, false, 'nodata'))
   }
 }
 

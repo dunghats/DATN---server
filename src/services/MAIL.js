@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const { MAIL_SETTINGS } = require('../constants/constants');
 const transporter = nodemailer.createTransport(MAIL_SETTINGS);
 
-module.exports.sendMailForgotPass = async (params) => {
+module.exports.sendMailForgotPassword = async (params) => {
   try {
     let info = await transporter.sendMail({
       from: MAIL_SETTINGS.auth.user,

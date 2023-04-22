@@ -1,13 +1,15 @@
-export const formatResponseError = (errors) => ({
+export const formatResponseError = (errors ,status, message) => ({
   errors,
   message: {
-    status: 'error'
+    status,
+    message
   }
 });
 
-export const formatResponseSuccess = (data) => ({
+export const formatResponseSuccess = (data, status, message) => ({
   data,
   message: {
-    status: 'success'
+    status,
+    message
   }
 });

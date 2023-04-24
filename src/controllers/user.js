@@ -17,7 +17,7 @@ async function isModerator(req, res, next) {
     phone: userResponse.phone,
     tokenDevice: userResponse.tokenDevice
   };
-  res.status(200).json(formatResponseSuccess(data));
+  res.status(200).json(formatResponseSuccess(data ,true, 'Đăng nhập thành công'));
 }
 
 function verifyToken(req, res, next) {
@@ -114,4 +114,4 @@ async function updateCheckTokenDevice   (req , res){
 
 module.exports = {
   moderatorBoard, isModerator, verifyToken, sendMailForgotPass, validateUserPass, newPass,updateCheckTokenDevice
-};
+}

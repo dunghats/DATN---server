@@ -42,8 +42,12 @@ const userSchema = new mongoose.Schema(
       type: String
     },
     image: {
-      type: String,
+      type: String
     },
+    countPost: {
+      type: Number,
+      default: 5
+    }
   },
   {
     timestamps: true

@@ -35,11 +35,13 @@ async function addPost(req, res) {
       phone: req.body.phone,
       supplements: req.body.supplements,
       time: hours + ':' + minutes,
-      date: date + '/' + month + '/' + year
+      date: date + '/' + month + '/' + year,
+      timeLong : ts
     };
     const saveData = await new post(data).save();
     res.status(200).json(formatResponseSuccess(saveData, true, 'Đăng thành công, bài viết của bạn đang trong quá trình phê duyệt'));
   } catch (error) {
+    console.log(error);
     res.status(400).json(formatResponseError({ code: '404' }, false, 'Đăng bài thất bại'));
   }
 }

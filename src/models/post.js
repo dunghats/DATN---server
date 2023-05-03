@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 
 const post = mongoose.Schema({
   idUser: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: String,
+    required: true
   },
   nameCategory: {
     type: String
@@ -31,7 +31,7 @@ const post = mongoose.Schema({
   },
   // diện tích
   acreage: {
-    type: String
+    type: Number
   },
   // đặt cọc
   deposit: {
@@ -114,6 +114,13 @@ const post = mongoose.Schema({
   dateEdit: {
     type: String,
     default: ''
+  },
+  timeLong: {
+    type: Number
+  },
+  countFavourite: {
+    type: Number,
+    default: 0
   }
 });
 

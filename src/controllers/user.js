@@ -1,9 +1,11 @@
 import User from '../models/user';
 import { formatResponseError, formatResponseSuccess } from '../config';
-const bcyrpt = require('bcrypt')
+
+const bcyrpt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config/auth.config');
 const { sendMailForgotPassword } = require('../services/MAIL');
+
 function moderatorBoard(req, res) {
   res.status(200).send('User Content.');
 }
@@ -17,7 +19,7 @@ async function isModerator(req, res, next) {
     phone: userResponse.phone,
     tokenDevice: userResponse.tokenDevice
   };
-  res.status(200).json(formatResponseSuccess(data ,true, 'Đăng nhập thành công'));
+  res.status(200).json(formatResponseSuccess(data, true, 'Đăng nhập thành công'));
 }
 
 function verifyToken(req, res, next) {
@@ -45,13 +47,11 @@ async function sendMailForgotPass(req, res) {
     console.log(checkEmail.otpResetPass);
     console.log(req.body.email);
     await sendMailForgotPassword({
-      to: req.body.email,
-      OTP: checkEmail.otpResetPass
+      to: req.body.email, OTP: checkEmail.otpResetPass
     });
 
     return res.status(200).json({
-      status: true,
-      message: 'Đã gửi tới'
+      status: true, message: 'Đã gửi tới'
     });
   } catch (error) {
     console.log(error);
@@ -85,10 +85,10 @@ async function newPass(req, res) {
       return res.status(200).json({ status: false, message: 'Email không tồn tại' });
     }
 
-    const passHass = bcyrpt.hashSync(req.body.password, 10)
+    const passHass = bcyrpt.hashSync(req.body.password, 10);
 
     const updatedUser = await User.findByIdAndUpdate(userData._id, {
-      $set: { password: passHass  }
+      $set: { password: passHass }
     });
     return res.status(200).json({ status: true, message: 'Mật khẩu đã được thay đổi' });
   } catch (error) {
@@ -96,22 +96,36 @@ async function newPass(req, res) {
   }
 }
 
-async function updateCheckTokenDevice   (req , res){
+async function updateCheckTokenDevice(req, res) {
   try {
-    const dataUserUpdate = await User.findOneAndUpdate(
-      { _id: req.body.id },
-      { tokenDevice: req.body.tokenDevice },
-      { new: true }
-    )
-    return  res.status(200).json({
-      status: true,
-      message: 'Update thành công'
-    })
+    const dataUserUpdate = await User.findOneAndUpdate({ _id: req.body.id }, { tokenDevice: req.body.tokenDevice }, { new: true });
+    return res.status(200).json({
+      status: true, message: 'Update thành công'
+    });
   } catch (error) {
-    res.status(200).json(formatResponseError({ code: '404' }, false, 'nodata'))
+    res.status(200).json(formatResponseError({ code: '404' }, false, 'nodata'));
+  }
+}
+
+async function getUserById(req, res) {
+  try {
+    const dataUser = await User.findById(req.params.id);
+    return res.status(200).json({
+      _id: dataUser._id, fullname: dataUser.fullname, image: dataUser.image, email: dataUser.email, phone: dataUser.phone
+    });
+  } catch (error) {
+    console.log(error)
+    res.status(200).json(formatResponseError({ code: '404' }, false, 'nodata'));
   }
 }
 
 module.exports = {
-  moderatorBoard, isModerator, verifyToken, sendMailForgotPass, validateUserPass, newPass,updateCheckTokenDevice
-}
+  moderatorBoard,
+  isModerator,
+  verifyToken,
+  sendMailForgotPass,
+  validateUserPass,
+  newPass,
+  updateCheckTokenDevice,
+  getUserById
+};

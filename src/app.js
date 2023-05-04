@@ -4,6 +4,7 @@ import cors from 'cors';
 import fs from 'fs';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import socket from 'socket.io';
 
 dotenv.config();
 const app = express();
@@ -21,7 +22,7 @@ routerFiles.forEach((file) => {
   app.use('/api', require(`./routes/${file}`).default);
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.info(`Server listening on port ${PORT}`);
 });
 
@@ -40,3 +41,61 @@ mongoose
   .catch((error) => {
     console.info(error);
   });
+
+const io = socket(server, {
+  cors: {
+    origin: 'http://localhost:8081',
+    credentials: true
+  }
+});
+let activeUser = new Map();
+let activeUserOrder = new Map();
+io.on('connection', socket => {
+  socket.on('join', (id) => {
+    activeUser.set(id, socket.id);
+    io.emit('join', {
+      id: id
+    });
+    console.log('user:   ' + id);
+  });
+  socket.on('message', (data) => {
+    const room = activeUser.get(data.room);
+    io.to(room).emit('new message', {
+      sender: data.sender,
+      message: data.message
+    });
+    console.log(data);
+  });
+  socket.on('statusMessage', (data) => {
+    const room = activeUser.get(data.sendTo);
+    io.to(room).emit('statusMsg', {
+      data
+    });
+  });
+
+  socket.on('statusUser', (data) => {
+    for (const item of activeUser.entries()) {
+      if (item[0] !== data._id) {
+        io.to(item[1]).emit('activeStatus', {
+          data
+        });
+      }
+    }
+  });
+  socket.on('disconnectUser', (data) => {
+    for (const item of activeUser.entries()) {
+      if (item[0] !== data._id) {
+        io.to(item[1]).emit('activeStatus', {
+          data
+        });
+      }
+    }
+  });
+  socket.on('disconnect', () => {
+    for (const item of activeUser.entries()) {
+      if (item[1] === socket.id) {
+        activeUser.delete(item[0]);
+      }
+    }
+  });
+});

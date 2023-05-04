@@ -136,6 +136,7 @@ class Auth {
         email: user.email,
         phone: user.phone,
         tokenDevice: user.tokenDevice,
+        role: user.role,
         accessToken
       };
 

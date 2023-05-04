@@ -17,6 +17,7 @@ async function isModerator(req, res, next) {
     fullname: userResponse.fullname,
     email: userResponse.email,
     phone: userResponse.phone,
+    role: userResponse.role,
     tokenDevice: userResponse.tokenDevice
   };
   res.status(200).json(formatResponseSuccess(data, true, 'Đăng nhập thành công'));

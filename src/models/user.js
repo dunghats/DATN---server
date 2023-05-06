@@ -19,9 +19,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    avatar: {
-      type: String
-    },
     salt: {
       type: String
     },
@@ -43,11 +40,23 @@ const userSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default : ''
+      default: ''
     },
     countPost: {
       type: Number,
       default: 5
+    },
+    address: {
+      type: String,
+      default: ''
+    },
+    personId: {
+      type: String,
+      default: ''
+    },
+    priceCashFlow: {
+      type:Number,
+      default: 0
     }
   },
   {

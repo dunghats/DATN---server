@@ -16,5 +16,8 @@ router.post('/auth/validateUserPass', userController.validateUserPass);
 router.post('/auth/newPass', userController.newPass);
 
 router.post('/auth/updateCheckTokenDevice', userController.updateCheckTokenDevice);
+router.route('/getCash/:id').get(userController.getCash)
 
+router.route('/updateAccount/:id').post(userController.updateAccount)
+router.route('/changeInFo/').post(userController.changeInFo)
 export default router;

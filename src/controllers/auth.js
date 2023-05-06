@@ -137,6 +137,7 @@ class Auth {
         phone: user.phone,
         tokenDevice: user.tokenDevice,
         role: user.role,
+        image: user.image,
         accessToken
       };
 

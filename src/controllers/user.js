@@ -1,5 +1,6 @@
 import User from '../models/user';
 import { formatResponseError, formatResponseSuccess } from '../config';
+import ROLE_ENUMS from '../constants/roles';
 
 const bcyrpt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -18,6 +19,7 @@ async function isModerator(req, res, next) {
     email: userResponse.email,
     phone: userResponse.phone,
     role: userResponse.role,
+    image: userResponse.image,
     tokenDevice: userResponse.tokenDevice
   };
   res.status(200).json(formatResponseSuccess(data, true, 'Đăng nhập thành công'));
@@ -112,11 +114,68 @@ async function getUserById(req, res) {
   try {
     const dataUser = await User.findById(req.params.id);
     return res.status(200).json({
-      _id: dataUser._id, fullname: dataUser.fullname, image: dataUser.image, email: dataUser.email, phone: dataUser.phone
+      _id: dataUser._id,
+      fullname: dataUser.fullname,
+      image: dataUser.image,
+      email: dataUser.email,
+      phone: dataUser.phone,
+      role: dataUser.role,
+      address: dataUser.address,
+      personId: dataUser.personId
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(200).json(formatResponseError({ code: '404' }, false, 'nodata'));
+  }
+}
+
+async function getCash(req, res) {
+  try {
+    const userData = await User.findOne({ _id: req.params.id });
+    res.status(200).json(userData.priceCashFlow);
+  } catch (error) {
+    res.status(400).json({
+      error
+    });
+  }
+}
+
+async function changeInFo(req, res) {
+  try {
+    const dataUser = await User.findOneAndUpdate({ _id: req.body.id }, {
+      fullname: req.body.fullname, personId: req.body.personId, address: req.body.address, image: req.body.image
+    }, { new: true });
+    const data = {
+      _id: dataUser._id,
+      fullname: dataUser.fullname,
+      image: dataUser.image,
+      email: dataUser.email,
+      phone: dataUser.phone,
+      role: dataUser.role
+    };
+    return res.status(200).json(formatResponseSuccess(data, true, 'Update thành công'));
+  } catch (error) {
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Update thất bại'));
+  }
+}
+
+async function updateAccount(req, res) {
+  try {
+    const dataUser = await User.findOneAndUpdate({ _id: req.params.id }, {
+      role: ROLE_ENUMS.HOST
+    }, { new: true });
+    const data = {
+      _id: dataUser._id,
+      fullname: dataUser.fullname,
+      image: dataUser.image,
+      email: dataUser.email,
+      phone: dataUser.phone,
+      role: dataUser.role
+    };
+    return res.status(200).json(formatResponseSuccess(data, true, 'Update thành công'));
+  } catch (error) {
+    console.log(error);
+    res.status(200).json(formatResponseError({ code: '404' }, false, 'Update thất bại'));
   }
 }
 
@@ -128,5 +187,8 @@ module.exports = {
   validateUserPass,
   newPass,
   updateCheckTokenDevice,
-  getUserById
+  getUserById,
+  getCash,
+  updateAccount,
+  changeInFo
 };

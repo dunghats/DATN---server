@@ -17,7 +17,9 @@ router.post('/auth/newPass', userController.newPass);
 
 router.post('/auth/updateCheckTokenDevice', userController.updateCheckTokenDevice);
 router.route('/getCash/:id').get(userController.getCash)
+router.route('/getCountPost/:id').get(userController.getCountPost)
 
 router.route('/updateAccount/:id').post(userController.updateAccount)
 router.route('/changeInFo/').post(userController.changeInFo)
+router.route('/updatePassword').patch(userController.updatePassword)
 export default router;

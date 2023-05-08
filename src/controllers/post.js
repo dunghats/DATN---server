@@ -1,5 +1,7 @@
 import post from '../models/post';
 import { formatResponseError, formatResponseSuccess } from '../config';
+import User from '../models/user';
+import cashFlow from '../models/cashFlow';
 
 async function addPost(req, res) {
   let ts = Date.now();
@@ -36,8 +38,59 @@ async function addPost(req, res) {
       supplements: req.body.supplements,
       time: hours + ':' + minutes,
       date: date + '/' + month + '/' + year,
-      timeLong : ts
+      timeLong: ts,
+
+      advertisement: req.body.advertisement,
+      timeAdvertisement: req.body.timeAdvertisement,
+      priceAll: req.body.priceAll
+
     };
+
+    const dataUser = await User.findById(req.body.idUser);
+
+    console.log(dataUser)
+    let priceCashFlow = dataUser.priceCashFlow;
+    let countPost = dataUser.countPost;
+    let content = '';
+
+    console.log(priceCashFlow);
+
+    //trừ tiền bao gồm cả tổng tiền quảng cáo
+
+    if (req.body.advertisement) {
+      if (countPost > 5) {
+        content = 'Thanh toán bài đăng bao gồm: giá đăng bài (20.000 nghìn) + ' + req.body.timeAdvertisement + ' ngày quảng cáo (50.000 nghìn/ngày)';
+      } else {
+        content = 'Thanh toán bài đăng bao gồm: giá đăng bài(free) + ' + req.body.timeAdvertisement + ' ngày quảng cáo (50.000 nghìn/ngày)';
+      }
+    } else {
+      if (countPost > 5) {
+        content = 'Thanh toán bài đăng bao gồm: giá đăng bài (20.000 nghìn)';
+      } else {
+        content = 'Thanh toán bài đăng bao gồm: giá đăng bài(free)';
+      }
+    }
+    await User.findOneAndUpdate({ _id: req.body.idUser }, { priceCashFlow: priceCashFlow -= parseInt(req.body.priceAll) }, { new: true });
+    // update số lượng bài viết của user
+    await User.findOneAndUpdate({ _id: req.body.idUser }, { countPost: countPost += 1 }, { new: true });
+
+    // tạo lịch sử giao dịch tiền
+    if (countPost > 5) {
+      const dataCashFlow = {
+        idUser: req.body.idUser,
+        title: 'Thông báo biến động số dư',
+        content: content,
+        price: req.body.priceAll,
+        dateTime: hours + ':' + minutes + ' ' + date + '-' + month + '-' + year,
+        status: false
+      };
+      await new cashFlow(dataCashFlow).save();
+    }
+
+    //create noti
+
+
+    //create post
     const saveData = await new post(data).save();
     res.status(200).json(formatResponseSuccess(saveData, true, 'Đăng thành công, bài viết của bạn đang trong quá trình phê duyệt'));
   } catch (error) {
@@ -115,10 +168,10 @@ async function deletePost(req, res) {
 async function getListPostByUser(req, res) {
   try {
     const filter = {
-      statusConfirm : true
+      statusConfirm: true
     };
     const data = await post.find(filter);
-    res.status(200).json(formatResponseSuccess(data, true, 'Get Success'));
+    res.status(200).json(formatResponseSuccess(data.reverse(), true, 'Get Success'));
   } catch (e) {
     res.status(400).json(formatResponseError({ code: '404' }, false, 'Get Failed'));
   }
@@ -142,8 +195,7 @@ async function getListPostByMyself(req, res) {
 async function confirmPostByAdmin(req, res) {
   try {
     const data = {
-      statusConfirm: true,
-      messageConfirm: 'Đã phê duyệt'
+      statusConfirm: true, messageConfirm: 'Đã phê duyệt'
     };
     const dataUpdate = await post.updateOne({ _id: req.params.id }, data);
     res.status(200).json(formatResponseSuccess(dataUpdate, true, 'Phê duyệt thành công'));
@@ -156,9 +208,7 @@ async function confirmPostByAdmin(req, res) {
 async function cancelPostByAdmin(req, res) {
   try {
     const data = {
-      statusConfirm: false,
-      messageConfirm: 'Bài viết bị huỷ',
-      textConfirm: req.body.textConfirm
+      statusConfirm: false, messageConfirm: 'Bài viết bị huỷ', textConfirm: req.body.textConfirm
     };
     const dataUpdate = await post.updateOne({ _id: req.body.id }, data);
     res.status(200).json(formatResponseSuccess(dataUpdate, true, 'Huỷ thành công'));
@@ -171,7 +221,7 @@ async function cancelPostByAdmin(req, res) {
 async function getListPostNoConfirmByAdmin(req, res) {
   try {
     const filter = {
-      statusConfirm : false
+      statusConfirm: false
     };
     const data = await post.find(filter);
     res.status(200).json(formatResponseSuccess(data, true, 'Get Success'));
@@ -181,6 +231,13 @@ async function getListPostNoConfirmByAdmin(req, res) {
 }
 
 module.exports = {
-  addPost, updatePost, getPostById, deletePost,getListPostByUser ,getListPostByMyself ,
-  confirmPostByAdmin,cancelPostByAdmin,getListPostNoConfirmByAdmin
+  addPost,
+  updatePost,
+  getPostById,
+  deletePost,
+  getListPostByUser,
+  getListPostByMyself,
+  confirmPostByAdmin,
+  cancelPostByAdmin,
+  getListPostNoConfirmByAdmin
 };

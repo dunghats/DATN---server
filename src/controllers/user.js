@@ -179,6 +179,39 @@ async function updateAccount(req, res) {
   }
 }
 
+async function updatePassword(req, res) {
+  try {
+    const checkEmail = await User.findOne({ _id: req.body.id });
+    const checkPass = bcyrpt.compareSync(req.body.password, checkEmail.password);
+    if (!checkPass) return res.status(200).json({
+      status: 'false', message: 'Mật khẩu cũ không đúng'
+    });
+    const passHass = bcyrpt.hashSync(req.body.passwordNew, 10);
+    const dataUserUpdate = await User.findOneAndUpdate({ _id: req.body.id }, {
+      password: passHass
+    }, { new: true });
+    return res.status(200).json({
+      status: true, message: 'Thay đổi thành công'
+    });
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({
+      status: false, message: 'User không tồn tại'
+    });
+  }
+}
+
+async function getCountPost(req, res) {
+  try {
+    const userData = await User.findOne({ _id: req.params.id });
+    res.status(200).json(userData.countPost);
+  } catch (error) {
+    res.status(400).json({
+      error
+    });
+  }
+}
+
 module.exports = {
   moderatorBoard,
   isModerator,
@@ -190,5 +223,7 @@ module.exports = {
   getUserById,
   getCash,
   updateAccount,
-  changeInFo
+  changeInFo,
+  updatePassword,
+  getCountPost
 };

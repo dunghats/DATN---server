@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema(
     },
     countPost: {
       type: Number,
-      default: 5
+      default: 0
     },
     address: {
       type: String,

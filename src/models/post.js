@@ -121,6 +121,20 @@ const post = mongoose.Schema({
   countFavourite: {
     type: Number,
     default: 0
+  },
+  // xác nhận là có quảng cáo hay không
+  advertisement:{
+    type: Boolean,
+    default: false
+  },
+  // thời giản quảng cáo là bao nhiêu ngày
+  timeAdvertisement:{
+    type: Number
+  },
+  // tổng tiền bài viết
+  priceAll:{
+    type:Number,
+    default: 0
   }
 });
 

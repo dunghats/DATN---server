@@ -123,19 +123,24 @@ const post = mongoose.Schema({
     default: 0
   },
   // xác nhận là có quảng cáo hay không
-  advertisement:{
+  advertisement: {
     type: Boolean,
     default: false
   },
   // thời giản quảng cáo là bao nhiêu ngày
-  timeAdvertisement:{
+  timeAdvertisement: {
     type: Number
   },
   // tổng tiền bài viết
-  priceAll:{
-    type:Number,
+  priceAll: {
+    type: Number,
     default: 0
-  }
+  },
+  viewsCount: {
+    type: Number,
+    default: 0
+  },
+  views: Array
 });
 
 export default mongoose.model('post', post);

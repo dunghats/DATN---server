@@ -177,6 +177,19 @@ async function getListPostByUser(req, res) {
   }
 }
 
+
+async function getListHomeAds(req, res) {
+  try {
+    const filter = {
+      statusConfirm: true, advertisement: true
+    };
+    const data = await post.find(filter);
+    res.status(200).json(formatResponseSuccess(data.reverse(), true, 'Get Success'));
+  } catch (e) {
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Get Failed'));
+  }
+}
+
 // list các bài đã đăng của user
 
 
@@ -252,7 +265,7 @@ async function updatePostAds(req, res) {
       timeAdvertisement: req.body.timeAdvertisement,
       priceAll: req.body.priceAll,
       timeEdit: hours + ':' + minutes,
-      dateEdit: date + '/' + month + '/' + year,
+      dateEdit: date + '/' + month + '/' + year
     };
     // trừ tiền user
     await User.findOneAndUpdate({ _id: req.body.idUser }, { priceCashFlow: priceCashFlow -= parseInt(req.body.priceAll) }, { new: true });
@@ -287,11 +300,11 @@ async function updateStatusRoom(req, res) {
   let seconds = date_ob.getSeconds();
   try {
     const data = {
-      statusRoom : req.body.statusRoom,
-      messageRoom : req.body.messageRoom,
+      statusRoom: req.body.statusRoom,
+      messageRoom: req.body.messageRoom,
       statusEdit: true,
       timeEdit: hours + ':' + minutes,
-      dateEdit: date + '/' + month + '/' + year,
+      dateEdit: date + '/' + month + '/' + year
     };
 
     const dataUpdate = await post.updateOne({ _id: req.body._id }, data);
@@ -325,6 +338,195 @@ async function getStatusAds(req, res) {
   }
 }
 
+async function userViewPost(req, res) {
+  try {
+    const dataPost = await post.findById({ _id: req.body.idPost }); // Lấy thông tin bài đăng từ ID
+    if (!post) {
+      console.log('Không tìm thấy bài đăng');
+      return;
+    }
+    if (!dataPost.views.includes(req.body.idUser)) {
+      dataPost.views.push(req.body.idUser);
+      dataPost.viewsCount++;
+      await dataPost.save();
+      res.status(200).json('okoko');
+    } else {
+      res.status(200).json('Người dùng đã xem bài đăng trước đó');
+    }
+  } catch (error) {
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Lỗi khi cập nhật số lượng người dùng xem bài đăng'));
+  }
+}
+
+async function searchLocationAndPost(req, res) {
+
+  try {
+    const dataCompile = [];
+    const dataLoaction = [
+      { titlePost: 'An Giang', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bà Rịa - Vũng Tàu', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bạc Liêu', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bắc Giang', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bắc Kạn', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bắc Ninh', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bến Tre', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bình Dương', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bình Định', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bình Phước', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Bình Thuận', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Cà Mau', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Cao Bằng', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Cần Thơ', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Đà Nẵng', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Đắk Lắk', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Đắk Nông', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Điện Biên', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Đồng Nai', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Đồng Tháp', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Gia Lai', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hà Giang', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hà Nam', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hà Nội', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hà Tĩnh', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hải Dương', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hải Phòng', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hậu Giang', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hòa Bình', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Thành phố Hồ Chí Minh', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Hưng Yên', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Khánh Hòa', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Kiên Giang', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Kon Tum', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Lai Châu', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Lạng Sơn', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Lào Cai', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Lâm Đồng', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Long An', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Nam Định', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Nghệ An', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Ninh Bình', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Ninh Thuận', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Phú Thọ', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Phú Yên', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Quảng Bình', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Quảng Nam', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Quảng Ngãi', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Quảng Ninh', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Quảng Trị', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Sóc Trăng', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Sơn La', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Tây Ninh', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Thái Bình', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Thái Nguyên', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Thanh Hóa', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Thừa Thiên Huế', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Tiền Giang', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Trà Vinh', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Tuyên Quang', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Vĩnh Long', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Vĩnh Phúc', address: 'Địa điểm', type: 1 },
+      { titlePost: 'Yên Bái', address: 'Địa điểm', type: 1 }
+    ];
+
+    dataLoaction.forEach(async (l) => {
+      if (l.titlePost.includes(req.params.textLocation)) {
+        dataCompile.push(l);
+      }
+    });
+
+    const regexName = { $regex: req.params.textLocation, $options: 'i' };
+
+    const dataPostTitle = await post.find({
+      statusConfirm: true,
+      $or: [
+        { title: regexName },
+        { cty: regexName },
+        { district: regexName },
+        { wards: regexName },
+        { street: regexName },
+        { address: regexName }
+      ]
+    });
+
+    dataPostTitle.forEach(async (item) => {
+      const dataResponse = {
+        idPost: item._id,
+        titlePost: item.title,
+        imagePost: item.images[0],
+        address: item.cty + ', ' + item.district + ', ' + item.wards + ', ' + item.street + ', ' + item.address,
+        type: 2
+      };
+      dataCompile.push(dataResponse);
+    });
+
+    res.status(200).json(dataCompile);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Error'));
+  }
+}
+
+async function searchLocationCty(req, res) {
+  try {
+    const regexName = { $regex: req.params.textLocation, $options: 'i' };
+    const filter = {
+      statusConfirm: true,
+      $or: [
+        { title: regexName },
+        { cty: regexName },
+        { district: regexName },
+        { wards: regexName },
+        { street: regexName },
+        { address: regexName }
+      ]
+    };
+    const data = await post.find(filter);
+    res.status(200).json(formatResponseSuccess(data.reverse(), true, 'Get Success'));
+  } catch (e) {
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Get Failed'));
+  }
+}
+
+async function getFilterTextLocationAndPrice(req, res) {
+  try {
+    const regexName = { $regex: req.params.textLocation, $options: 'i' };
+    const filter = {
+      statusConfirm: true,
+      price: {
+        $gte: Number(req.params.startPrice) + 1,
+        $lt: Number(req.params.endPrice) + 1
+      },
+      $or: [
+        { title: regexName },
+        { cty: regexName },
+        { district: regexName },
+        { wards: regexName },
+        { street: regexName },
+        { address: regexName }
+      ]
+    };
+    const data = await post.find(filter);
+    res.status(200).json(formatResponseSuccess(data.reverse(), true, 'Get Success'));
+  } catch (e) {
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Get Failed'));
+  }
+}
+
+async function getFilterPrice(req, res) {
+  try {
+    const filter = {
+      statusConfirm: true,
+      price: {
+        $gte: Number(req.params.startPrice) + 1,
+        $lt: Number(req.params.endPrice) + 1
+      }
+    };
+    const data = await post.find(filter);
+    res.status(200).json(formatResponseSuccess(data.reverse(), true, 'Get Success'));
+  } catch (e) {
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Get Failed'));
+  }
+}
 
 module.exports = {
   addPost,
@@ -339,5 +541,11 @@ module.exports = {
   updatePostAds,
   updateStatusRoom,
   getStatusPost,
-  getStatusAds
-}
+  getStatusAds,
+  getListHomeAds,
+  userViewPost,
+  searchLocationAndPost,
+  searchLocationCty,
+  getFilterTextLocationAndPrice,
+  getFilterPrice
+};

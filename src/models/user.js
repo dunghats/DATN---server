@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
+    textReport: {
+      type: String,
+      default: ''
+    },
     role: {
       type: Number,
       enum: Object.values(ROLE_ENUMS),
@@ -55,7 +59,7 @@ const userSchema = new mongoose.Schema(
       default: ''
     },
     priceCashFlow: {
-      type:Number,
+      type: Number,
       default: 0
     }
   },

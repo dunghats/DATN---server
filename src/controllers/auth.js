@@ -119,7 +119,6 @@ class Auth {
         );
       }
 
-
       const user = await User.findOne(filter).exec();
 
       const checkPass = bcyrpt.compareSync(req.body.password, user.password);
@@ -138,7 +137,9 @@ class Auth {
         tokenDevice: user.tokenDevice,
         role: user.role,
         image: user.image,
-        accessToken
+        accessToken,
+        textReport : user.textReport,
+        verified: user.verified
       };
 
       return res.status(200).json(formatResponseSuccess(data, true, 'Đăng nhập thành công'));

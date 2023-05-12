@@ -1,6 +1,8 @@
 import User from '../models/user';
 import { formatResponseError, formatResponseSuccess } from '../config';
 import ROLE_ENUMS from '../constants/roles';
+import notification from '../models/notification';
+import bookmark from '../models/bookmark';
 
 const bcyrpt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -20,7 +22,9 @@ async function isModerator(req, res, next) {
     phone: userResponse.phone,
     role: userResponse.role,
     image: userResponse.image,
-    tokenDevice: userResponse.tokenDevice
+    tokenDevice: userResponse.tokenDevice,
+    textReport : userResponse.textReport,
+    verified: userResponse.verified
   };
   res.status(200).json(formatResponseSuccess(data, true, 'Đăng nhập thành công'));
 }
@@ -194,7 +198,7 @@ async function updatePassword(req, res) {
       status: true, message: 'Thay đổi thành công'
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(400).json({
       status: false, message: 'User không tồn tại'
     });
@@ -212,6 +216,38 @@ async function getCountPost(req, res) {
   }
 }
 
+async function getListNotificationByIdUser(req, res) {
+  try {
+    const dataNotification = await notification.find({
+      idUser: req.params.id
+    });
+    res.status(200).json(formatResponseSuccess(dataNotification.reverse(), true, 'Thành công'));
+  } catch (error) {
+    console.log(error);
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Thất bại'));
+  }
+}
+
+async function updateNotificationSeen(req, res) {
+  try {
+    const dataNotification = await notification.findOneAndUpdate(
+      { _id: req.params.id },
+      { isSeem: false },
+      { new: true }
+    );
+    res.status(200).json({
+      status: true,
+      message: 'Update success'
+    });
+
+  } catch (error) {
+    res.status(400).json({
+      status: false,
+      message: 'Update faild'
+    });
+  }
+}
+
 module.exports = {
   moderatorBoard,
   isModerator,
@@ -225,5 +261,7 @@ module.exports = {
   updateAccount,
   changeInFo,
   updatePassword,
-  getCountPost
+  getCountPost,
+  getListNotificationByIdUser,
+  updateNotificationSeen
 };

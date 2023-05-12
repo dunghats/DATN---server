@@ -2,6 +2,13 @@ import post from '../models/post';
 import { formatResponseError, formatResponseSuccess } from '../config';
 import User from '../models/user';
 import cashFlow from '../models/cashFlow';
+import notification from '../models/notification';
+
+const FCM = require('fcm-node');
+
+const Server_key = 'AAAALCrvcUE:APA91bFbr2F3dTmwO4-zllN-1lcaqn6zzCb4Q2yy798_zxp298ObbagjUhdPOLSTT7OaMO8vQH8Dueodzkq_gVsyKi-BdbBNFesQ6SsCTHHAeqK-m5DAPfIwG65U4rrwk2Zz87WOLy2w';
+
+const fcm = new FCM(Server_key);
 
 async function addPost(req, res) {
   let ts = Date.now();
@@ -75,7 +82,6 @@ async function addPost(req, res) {
     await User.findOneAndUpdate({ _id: req.body.idUser }, { countPost: countPost += 1 }, { new: true });
 
     // tạo lịch sử giao dịch tiền
-    if (countPost > 5) {
       const dataCashFlow = {
         idUser: req.body.idUser,
         title: 'Thông báo biến động số dư',
@@ -85,12 +91,6 @@ async function addPost(req, res) {
         status: false
       };
       await new cashFlow(dataCashFlow).save();
-    }
-
-    //create noti
-
-
-    //create post
     const saveData = await new post(data).save();
     res.status(200).json(formatResponseSuccess(saveData, true, 'Đăng thành công, bài viết của bạn đang trong quá trình phê duyệt'));
   } catch (error) {
@@ -200,9 +200,52 @@ async function confirmPostByAdmin(req, res) {
     const data = {
       statusConfirm: true, messageConfirm: 'Đã phê duyệt'
     };
+
+    const dataPost = await post.findById(req.params.id)
+
     const dataUpdate = await post.updateOne({ _id: req.params.id }, data);
     res.status(200).json(formatResponseSuccess(dataUpdate, true, 'Phê duyệt thành công'));
+
+    const dataUserPost = await User.findOne({ _id: dataPost.idUser });
+    console.log(dataUserPost)
+    const message = {
+      to: dataUserPost.tokenDevice,
+      notification: {
+        title: "Thông báo",
+        body: 'Bài viết của bạn đã được chúng tôi phê duyệt',
+        sound: "default"
+      },
+      data: {
+        title: "Thông báo",
+        body: 'Bài viết của bạn đã được chúng tôi phê duyệt',
+        idPost: dataPost._id,
+        image: dataPost.images[0],
+        type: 4
+      },
+      android: {
+        'priority': 'high'
+      }
+    };
+    const dataNewNoti = {
+      idPost: dataPost._id,
+      idUser: dataPost.idUser,
+      title: 'Thông báo',
+      content: 'Bài viết của bạn đã được chúng tôi phê duyệt',
+      imagePost: dataPost.images[0],
+      timeLong: Date.now(),
+      type: 4
+    };
+    fcm.send(message, function(err, response) {
+      if (err) {
+        console.log('Bắn Lỗi ' + err);
+      } else {
+        console.log('Bắn thành công');
+      }
+    });
+     await new notification(dataNewNoti).save();
+
   } catch (e) {
+    console.log(e)
     res.status(400).json(formatResponseError({ code: '404' }, false, 'Update Failed'));
   }
 }
@@ -213,9 +256,52 @@ async function cancelPostByAdmin(req, res) {
     const data = {
       statusConfirm: false, messageConfirm: 'Bài viết bị huỷ', textConfirm: req.body.textConfirm
     };
+    const dataPost = await post.findById(req.body.id)
+
     const dataUpdate = await post.updateOne({ _id: req.body.id }, data);
     res.status(200).json(formatResponseSuccess(dataUpdate, true, 'Huỷ thành công'));
+
+    const dataUserPost = await User.findOne({ _id: dataPost.idUser });
+    const message = {
+      to: dataUserPost.tokenDevice,
+      notification: {
+        title: "Thông báo",
+        body: 'Chúng tôi đã từ chối bài viết của bạn, lí do: ' + req.body.textConfirm,
+        sound: "default"
+      },
+      data: {
+        title: "Thông báo",
+        body: 'Chúng tôi đã từ chối bài viết của bạn, lí do: ' + req.body.textConfirm,
+        idPost: dataPost._id,
+        image: dataPost.images[0],
+        type: 4
+      },
+      android: {
+        'priority': 'high'
+      }
+    };
+
+    const dataNewNoti = {
+      idPost: dataPost._id,
+      idUser: dataPost.idUser,
+      title: 'Thông báo',
+      content: 'Chúng tôi đã từ chối bài viết của bạn, lí do: ' + req.body.textConfirm,
+      imagePost: dataPost.images[0],
+      timeLong: Date.now(),
+      type: 4
+    };
+
+    fcm.send(message, function(err, response) {
+      if (err) {
+        console.log('Bắn Lỗi ' + err);
+      } else {
+        console.log('Bắn thành công');
+      }
+    });
+    const saveOrder = await new notification(dataNewNoti).save();
+
   } catch (e) {
+    console.log(e)
     res.status(400).json(formatResponseError({ code: '404' }, false, 'Update Failed'));
   }
 }

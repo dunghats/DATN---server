@@ -1,5 +1,13 @@
 import favourite from '../models/favourite';
 import { formatResponseError, formatResponseSuccess } from '../config';
+import post from '../models/post';
+import User from '../models/user';
+import notification from '../models/notification';
+
+const FCM = require('fcm-node');
+const Server_key = 'AAAALCrvcUE:APA91bFbr2F3dTmwO4-zllN-1lcaqn6zzCb4Q2yy798_zxp298ObbagjUhdPOLSTT7OaMO8vQH8Dueodzkq_gVsyKi-BdbBNFesQ6SsCTHHAeqK-m5DAPfIwG65U4rrwk2Zz87WOLy2w';
+const fcm = new FCM(Server_key);
+const _ = require('lodash');
 
 async function addFavourite(req, res) {
   try {
@@ -8,6 +16,57 @@ async function addFavourite(req, res) {
     };
     const data = await new favourite(dataFavourite).save();
     res.status(200).json(formatResponseSuccess(data, true, 'Yêu thích thành công'));
+
+    const dataPost = await post.findOne({ _id: req.body.idPost });
+
+    const dataUserAction = await User.findOne({ _id: req.body.idUser });
+    const dataUserPost = await User.findOne({ _id: dataPost.idUser });
+
+    // nội dung bắn thông báo về
+    const message = {
+      to: dataUserPost.tokenDevice,
+      notification: {
+        title: dataUserAction.fullname,
+        body: 'Đã bày tỏ cảm súc về bài viết của bạn',
+        sound: "default"
+      },
+      data: {
+        title: dataUserAction.fullname,
+        body: 'Đã bày tỏ cảm súc về bài viết của bạn',
+        idPost: dataPost._id,
+        image: dataUserAction.image,
+        type: 1
+      },
+      android: {
+        'priority': 'high'
+      }
+    };
+    const idUserRequest = req.body.idUser;
+    const idUserData = dataUserPost._id;
+
+    console.log('id1 ' + idUserRequest);
+    console.log('id2 ' + idUserData);
+
+    const dataNewNoti = {
+      idPost: dataPost._id,
+      idUser: dataPost.idUser,
+      title: dataUserAction.fullname,
+      content: 'Đã bày tỏ cảm súc về bài viết của bạn',
+      imagePost: dataUserAction.image,
+      timeLong: Date.now(),
+      type: 1
+    };
+
+    if (idUserRequest != idUserData) {
+      fcm.send(message, function(err, response) {
+        if (err) {
+          console.log('Bắn Lỗi ' + err);
+        } else {
+          console.log('Bắn thành công');
+        }
+      });
+      const saveOrder = await new notification(dataNewNoti).save();
+    }
   } catch (error) {
     console.log(error);
     res.status(400).json(formatResponseError({ code: '404' }, false, 'Yêu thích thất bại'));
@@ -56,5 +115,5 @@ async function getCountFavouriteByIdPost(req, res) {
 // }
 
 module.exports = {
-  addFavourite, getFavouriteByIdUserAndIdPost, deleteFavourite,getCountFavouriteByIdPost
+  addFavourite, getFavouriteByIdUserAndIdPost, deleteFavourite, getCountFavouriteByIdPost
 };

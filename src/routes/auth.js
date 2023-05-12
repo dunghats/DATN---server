@@ -10,16 +10,18 @@ router.get('/auth/profile', setAuth, User.profile);
 
 router.post('/auth/login', /*User.validLogin,*/ User.login);
 router.get('/auth/getUserByToken', [userController.verifyToken, userController.isModerator], userController.moderatorBoard);
-router.get('/auth/getUserById/:id' , userController.getUserById);
+router.get('/auth/getUserById/:id', userController.getUserById);
 router.post('/auth/checkEmailForgot', userController.sendMailForgotPass);
 router.post('/auth/validateUserPass', userController.validateUserPass);
 router.post('/auth/newPass', userController.newPass);
 
 router.post('/auth/updateCheckTokenDevice', userController.updateCheckTokenDevice);
-router.route('/getCash/:id').get(userController.getCash)
-router.route('/getCountPost/:id').get(userController.getCountPost)
+router.route('/getCash/:id').get(userController.getCash);
+router.route('/getCountPost/:id').get(userController.getCountPost);
 
-router.route('/updateAccount/:id').post(userController.updateAccount)
-router.route('/changeInFo/').post(userController.changeInFo)
-router.route('/updatePassword').patch(userController.updatePassword)
+router.route('/updateAccount/:id').post(userController.updateAccount);
+router.route('/changeInFo/').post(userController.changeInFo);
+router.route('/updatePassword').patch(userController.updatePassword);
+router.route('/getListNotificationByIdUser/:id').get(userController.getListNotificationByIdUser);
+router.route('/updateNotificationSeen/:id').patch(userController.updateNotificationSeen)
 export default router;

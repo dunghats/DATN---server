@@ -27,12 +27,12 @@ async function addFavourite(req, res) {
       to: dataUserPost.tokenDevice,
       notification: {
         title: dataUserAction.fullname,
-        body: 'Đã bày tỏ cảm súc về bài viết của bạn',
+        body: 'Đã bày tỏ cảm xúc về bài viết của bạn',
         sound: "default"
       },
       data: {
         title: dataUserAction.fullname,
-        body: 'Đã bày tỏ cảm súc về bài viết của bạn',
+        body: 'Đã bày tỏ cảm xúc về bài viết của bạn',
         idPost: dataPost._id,
         image: dataUserAction.image,
         type: 1
@@ -51,7 +51,7 @@ async function addFavourite(req, res) {
       idPost: dataPost._id,
       idUser: dataPost.idUser,
       title: dataUserAction.fullname,
-      content: 'Đã bày tỏ cảm súc về bài viết của bạn',
+      content: 'Đã bày tỏ cảm xúc về bài viết của bạn',
       imagePost: dataUserAction.image,
       timeLong: Date.now(),
       type: 1

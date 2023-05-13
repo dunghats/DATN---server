@@ -258,11 +258,12 @@ async function getAllListAccount(req, res) {
   }
 }
 
-async function updateStatusAccountByAdmin(req, res) {
+async function updateStatusAccountByAdmin(req, res) { // true false true đang sống false acc ban
+
   try {
     const dataUserUpdate = await User.findOneAndUpdate({ _id: req.body.idUser }, {
       verified: req.body.verified,
-      textReport: req.body.textReport
+      textReport: req.body.textReport// câp lại acc thì textReport ""
     }, { new: true });
     res.status(200).json(formatResponseSuccess(dataUserUpdate, true, 'Update Success'));
   } catch (e) {

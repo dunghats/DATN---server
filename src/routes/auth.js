@@ -8,7 +8,7 @@ router.post('/auth/register',/* User.validRegister,*/ User.register);
 
 router.get('/auth/profile', setAuth, User.profile);
 
-router.post('/auth/login', /*User.validLogin,*/ User.login);
+router.post('/auth/login', /*User.validLogin,*/ User.login); // đăng nhập đây
 router.get('/auth/getUserByToken', [userController.verifyToken, userController.isModerator], userController.moderatorBoard);
 router.get('/auth/getUserById/:id', userController.getUserById);
 router.post('/auth/checkEmailForgot', userController.sendMailForgotPass);
@@ -27,6 +27,6 @@ router.route('/updateNotificationSeen/:id').patch(userController.updateNotificat
 
 // admin
 router.get('/accountAdmin/getAllAccount' , userController.getAllListAccount)
-router.patch('/accountAdmin/updateStatusAccountByAdmin' , userController.updateStatusAccountByAdmin)
+router.patch('/accountAdmin/updateStatusAccountByAdmin' , userController.updateStatusAccountByAdmin)// thằng này là ban acc và cấp lại acc luôn
 
 export default router;

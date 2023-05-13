@@ -8,15 +8,15 @@ router.route('/post').post(postController.addPost);
 router.route('/post/:id').patch(postController.updatePost).delete(postController.deletePost).get(postController.getPostById);
 
 //post home
-router.get('/postHome', postController.getListPostByUser);
-router.get('/postHomeAds', postController.getListHomeAds);
+router.get('/postHome', postController.getListPostByUser);// danh sách tât cả bài viết luôn bao gồm chưa phê duyệt và đã phê duyệt
+router.get('/postHomeAds', postController.getListHomeAds); // danh sách quảng cáo
 
 router.route('/postByIdUser/:id').get(postController.getListPostByMyself);
 
 //postAdmin
-router.patch('/confirmPostByAdmin/:id', postController.confirmPostByAdmin);
-router.patch('/cancelPostByAdmin', postController.cancelPostByAdmin);
-router.get('/postAdmin', postController.getListPostNoConfirmByAdmin);
+router.patch('/confirmPostByAdmin/:id', postController.confirmPostByAdmin);// phê duyệt bài viêt id là id bài đăng
+router.patch('/cancelPostByAdmin', postController.cancelPostByAdmin); /// từ chối không phê duyệt
+router.get('/postAdmin', postController.getListPostNoConfirmByAdmin); /// list danh sách chưa phê duyệt
 
 
 router.patch('/ads/updatePostAds', postController.updatePostAds);
@@ -32,5 +32,5 @@ router.get('/searchLocationCty/:textLocation', postController.searchLocationCty)
 router.get('/searchLocationCtyAndPrice/:textLocation&startPrice=:startPrice&endPrice=:endPrice', postController.getFilterTextLocationAndPrice);
 
 router.get('/searchPrice/startPrice=:startPrice&endPrice=:endPrice', postController.getFilterPrice);
-router.get ('/postAdmin/statistical/startDate=:startDate&endDate=:endDate' , postController.statistical)
+router.get ('/postAdmin/statistical/startDate=:startDate&endDate=:endDate' , postController.statistical)// thông kê từ ngày đến ngày nào timelong
 export default router;

@@ -10,6 +10,8 @@ const Server_key = 'AAAALCrvcUE:APA91bFbr2F3dTmwO4-zllN-1lcaqn6zzCb4Q2yy798_zxp2
 
 const fcm = new FCM(Server_key);
 
+const cron = require('node-cron');
+
 async function addPost(req, res) {
   let ts = Date.now();
   let date_ob = new Date(ts);
@@ -114,6 +116,21 @@ async function addPost(req, res) {
     console.log(error);
     res.status(400).json(formatResponseError({ code: '404' }, false, 'Đăng bài thất bại'));
   }
+}
+
+async function updateDataAfterDays(req, res) {
+  cron.schedule(`0 0 */${parseInt(req.params.day)} * *`, async () => {
+    try {
+      const data = {
+        advertisement: false
+      };
+      const dataUpdate = await post.updateOne({ _id: req.params.id }, data);
+      res.status(200).json('Đã Cập Nhật');
+      console.log(`Đã cập nhật quảng caáo. id ${req.params.id}`);
+    } catch (error) {
+      console.error('Lỗi khi cập nhật dữ liệu:', error);
+    }
+  });
 }
 
 async function updatePost(req, res) {
@@ -637,10 +654,10 @@ async function statistical(req, res) {
     const endDate = new Date(req.params.endDate);
     const filter = {
       timeLong: {
-        $gte: startDate ,
+        $gte: startDate,
         $lt: endDate
       },
-      _id: "645efe1c14300b577a70bde5"
+      _id: '645efe1c14300b577a70bde5'
     };
     const data = await cashFlow.find(filter);
     res.status(200).json(formatResponseSuccess(data.reverse(), true, 'Get Success'));
@@ -669,5 +686,6 @@ module.exports = {
   searchLocationCty,
   getFilterTextLocationAndPrice,
   getFilterPrice,
-  statistical
+  statistical,
+  updateDataAfterDays
 };

@@ -33,4 +33,6 @@ router.get('/searchLocationCtyAndPrice/:textLocation&startPrice=:startPrice&endP
 
 router.get('/searchPrice/startPrice=:startPrice&endPrice=:endPrice', postController.getFilterPrice);
 router.get ('/postAdmin/statistical/startDate=:startDate&endDate=:endDate' , postController.statistical)// thông kê từ ngày đến ngày nào timelong
+
+router.post('/updateAds/idPost=:id&dayAds=:day' , postController.updateDataAfterDays)
 export default router;

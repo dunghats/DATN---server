@@ -32,4 +32,5 @@ router.get('/searchLocationCty/:textLocation', postController.searchLocationCty)
 router.get('/searchLocationCtyAndPrice/:textLocation&startPrice=:startPrice&endPrice=:endPrice', postController.getFilterTextLocationAndPrice);
 
 router.get('/searchPrice/startPrice=:startPrice&endPrice=:endPrice', postController.getFilterPrice);
+router.get ('/postAdmin/statistical/startDate=:startDate&endDate=:endDate' , postController.statistical)
 export default router;

@@ -21,7 +21,10 @@ const cashFlow = mongoose.Schema(
     status: {
       type: Boolean,
       default: true
-    }
+    },
+    timeLong: {
+      type: Number
+    },
   }
 );
 

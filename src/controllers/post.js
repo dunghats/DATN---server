@@ -55,12 +55,9 @@ async function addPost(req, res) {
 
     const dataUser = await User.findById(req.body.idUser);
 
-    console.log(dataUser);
     let priceCashFlow = dataUser.priceCashFlow;
     let countPost = dataUser.countPost;
     let content = '';
-
-    console.log(priceCashFlow);
 
     //trừ tiền bao gồm cả tổng tiền quảng cáo
 
@@ -82,6 +79,8 @@ async function addPost(req, res) {
     await User.findOneAndUpdate({ _id: req.body.idUser }, { countPost: countPost += 1 }, { new: true });
 
     // tạo lịch sử giao dịch tiền
+
+    if (parseInt(req.body.priceAll) > 0) {
       const dataCashFlow = {
         idUser: req.body.idUser,
         title: 'Thông báo biến động số dư',
@@ -91,6 +90,24 @@ async function addPost(req, res) {
         status: false
       };
       await new cashFlow(dataCashFlow).save();
+
+      const dataCashFlowAdmin = {
+        idUser: '645efe1c14300b577a70bde5',
+        title: 'Khách Hàng Thanh Toán: ' + dataUser.fullname,
+        content: content,
+        price: req.body.priceAll,
+        dateTime: hours + ':' + minutes + ' ' + date + '-' + month + '-' + year,
+        status: true,
+        timeLong: ts
+      };
+      await new cashFlow(dataCashFlowAdmin).save();
+
+      // update Tiền admin
+      const dataUserAdmin = await User.findById('645efe1c14300b577a70bde5');
+      let priceCashFlowAdmin = dataUserAdmin.priceCashFlow;
+      await User.findOneAndUpdate({ _id: '645efe1c14300b577a70bde5' }, { priceCashFlow: priceCashFlowAdmin += parseInt(req.body.priceAll) }, { new: true });
+    }
+
     const saveData = await new post(data).save();
     res.status(200).json(formatResponseSuccess(saveData, true, 'Đăng thành công, bài viết của bạn đang trong quá trình phê duyệt'));
   } catch (error) {
@@ -201,22 +218,22 @@ async function confirmPostByAdmin(req, res) {
       statusConfirm: true, messageConfirm: 'Đã phê duyệt'
     };
 
-    const dataPost = await post.findById(req.params.id)
+    const dataPost = await post.findById(req.params.id);
 
     const dataUpdate = await post.updateOne({ _id: req.params.id }, data);
     res.status(200).json(formatResponseSuccess(dataUpdate, true, 'Phê duyệt thành công'));
 
     const dataUserPost = await User.findOne({ _id: dataPost.idUser });
-    console.log(dataUserPost)
+    console.log(dataUserPost);
     const message = {
       to: dataUserPost.tokenDevice,
       notification: {
-        title: "Thông báo",
+        title: 'Thông báo',
         body: 'Bài viết của bạn đã được chúng tôi phê duyệt',
-        sound: "default"
+        sound: 'default'
       },
       data: {
-        title: "Thông báo",
+        title: 'Thông báo',
         body: 'Bài viết của bạn đã được chúng tôi phê duyệt',
         idPost: dataPost._id,
         image: dataPost.images[0],
@@ -242,10 +259,10 @@ async function confirmPostByAdmin(req, res) {
         console.log('Bắn thành công');
       }
     });
-     await new notification(dataNewNoti).save();
+    await new notification(dataNewNoti).save();
 
   } catch (e) {
-    console.log(e)
+    console.log(e);
     res.status(400).json(formatResponseError({ code: '404' }, false, 'Update Failed'));
   }
 }
@@ -256,7 +273,7 @@ async function cancelPostByAdmin(req, res) {
     const data = {
       statusConfirm: false, messageConfirm: 'Bài viết bị huỷ', textConfirm: req.body.textConfirm
     };
-    const dataPost = await post.findById(req.body.id)
+    const dataPost = await post.findById(req.body.id);
 
     const dataUpdate = await post.updateOne({ _id: req.body.id }, data);
     res.status(200).json(formatResponseSuccess(dataUpdate, true, 'Huỷ thành công'));
@@ -265,12 +282,12 @@ async function cancelPostByAdmin(req, res) {
     const message = {
       to: dataUserPost.tokenDevice,
       notification: {
-        title: "Thông báo",
+        title: 'Thông báo',
         body: 'Chúng tôi đã từ chối bài viết của bạn, lí do: ' + req.body.textConfirm,
-        sound: "default"
+        sound: 'default'
       },
       data: {
-        title: "Thông báo",
+        title: 'Thông báo',
         body: 'Chúng tôi đã từ chối bài viết của bạn, lí do: ' + req.body.textConfirm,
         idPost: dataPost._id,
         image: dataPost.images[0],
@@ -301,7 +318,7 @@ async function cancelPostByAdmin(req, res) {
     const saveOrder = await new notification(dataNewNoti).save();
 
   } catch (e) {
-    console.log(e)
+    console.log(e);
     res.status(400).json(formatResponseError({ code: '404' }, false, 'Update Failed'));
   }
 }
@@ -614,6 +631,24 @@ async function getFilterPrice(req, res) {
   }
 }
 
+async function statistical(req, res) {
+  try {
+    const startDate = new Date(req.params.startDate);
+    const endDate = new Date(req.params.endDate);
+    const filter = {
+      timeLong: {
+        $gte: startDate ,
+        $lt: endDate
+      },
+      _id: "645efe1c14300b577a70bde5"
+    };
+    const data = await cashFlow.find(filter);
+    res.status(200).json(formatResponseSuccess(data.reverse(), true, 'Get Success'));
+  } catch (e) {
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Get Failed'));
+  }
+}
+
 module.exports = {
   addPost,
   updatePost,
@@ -633,5 +668,6 @@ module.exports = {
   searchLocationAndPost,
   searchLocationCty,
   getFilterTextLocationAndPrice,
-  getFilterPrice
+  getFilterPrice,
+  statistical
 };

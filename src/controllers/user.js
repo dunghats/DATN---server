@@ -23,7 +23,7 @@ async function isModerator(req, res, next) {
     role: userResponse.role,
     image: userResponse.image,
     tokenDevice: userResponse.tokenDevice,
-    textReport : userResponse.textReport,
+    textReport: userResponse.textReport,
     verified: userResponse.verified
   };
   res.status(200).json(formatResponseSuccess(data, true, 'Đăng nhập thành công'));
@@ -248,6 +248,30 @@ async function updateNotificationSeen(req, res) {
   }
 }
 
+async function getAllListAccount(req, res) {
+  try {
+    const allUser = await User.find({ _id: { $ne: '645efe1c14300b577a70bde5' } });
+    res.status(200).json(formatResponseSuccess(allUser.reverse(), true, 'Get Success'));
+  } catch (e) {
+    console.log(e);
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Get Failed'));
+  }
+}
+
+async function updateStatusAccountByAdmin(req, res) {
+  try {
+    const dataUserUpdate = await User.findOneAndUpdate({ _id: req.body.idUser }, {
+      verified: req.body.verified,
+      textReport: req.body.textReport
+    }, { new: true });
+    res.status(200).json(formatResponseSuccess(dataUserUpdate, true, 'Update Success'));
+  } catch (e) {
+    console.log(e);
+    res.status(400).json(formatResponseError({ code: '404' }, false, 'Update Failed'));
+  }
+}
+
+
 module.exports = {
   moderatorBoard,
   isModerator,
@@ -263,5 +287,7 @@ module.exports = {
   updatePassword,
   getCountPost,
   getListNotificationByIdUser,
-  updateNotificationSeen
+  updateNotificationSeen,
+  getAllListAccount,
+  updateStatusAccountByAdmin
 };

@@ -24,4 +24,9 @@ router.route('/changeInFo/').post(userController.changeInFo);
 router.route('/updatePassword').patch(userController.updatePassword);
 router.route('/getListNotificationByIdUser/:id').get(userController.getListNotificationByIdUser);
 router.route('/updateNotificationSeen/:id').patch(userController.updateNotificationSeen)
+
+// admin
+router.get('/accountAdmin/getAllAccount' , userController.getAllListAccount)
+router.patch('/accountAdmin/updateStatusAccountByAdmin' , userController.updateStatusAccountByAdmin)
+
 export default router;
